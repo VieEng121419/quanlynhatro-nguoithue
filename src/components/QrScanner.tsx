@@ -20,38 +20,19 @@ export function QrScanner({ onScan, onClose }: QrScannerProps) {
     onScanRef.current = onScan;
   }, [onScan]);
 
-  const startScanner = useCallback(async () => {
-    setError(null);
+  const startScannerWithConfig = useCallback(
+    (config: { facingMode?: string; deviceId?: { exact: string } }) => {
+      const scanner = new Html5Qrcode("qr-reader");
+      scannerRef.current = scanner;
 
-    // 1. Lấy danh sách camera
-    const devices = await Html5Qrcode.getCameras();
-    if (!devices?.length) {
-      setError("Không tìm thấy camera trên thiết bị này!");
-      return;
-    }
-
-    // 2. Ưu tiên camera sau (environment), fallback camera trước (user)
-    const backCamera =
-      devices.find((d) => d.label.toLowerCase().includes("back")) ||
-      devices.find((d) => d.label.toLowerCase().includes("environment")) ||
-      devices.find((d) => d.label.toLowerCase().includes("rear"));
-    const selectedDeviceId = backCamera?.id ?? devices[0].id;
-
-    // 3. Tạo scanner mới
-    const scanner = new Html5Qrcode("qr-reader");
-    scannerRef.current = scanner;
-
-    let resolved = false;
-
-    try {
-      await scanner.start(
-        { deviceId: { exact: selectedDeviceId } },
+      return scanner.start(
+        config,
         { fps: 10, qrbox: { width: 250, height: 250 } },
         (decodedText) => {
           // Dừng scanner sau khi quét được để tránh quét lặp
-          scanner
-            .stop()
-            .then(() => scanner.clear())
+          scannerRef.current
+            ?.stop()
+            .then(() => scannerRef.current?.clear())
             .catch(() => {});
           onScanRef.current(decodedText);
         },
@@ -59,27 +40,32 @@ export function QrScanner({ onScan, onClose }: QrScannerProps) {
           // ignore per-frame errors
         },
       );
-      resolved = true;
-    } catch (err) {
-      // Nếu camera sau fail thì thử camera trước
-      if (!resolved) {
+    },
+    [],
+  );
+
+  const startScanner = useCallback(async () => {
+    setError(null);
+
+    // 1. Ưu tiên camera sau (environment) — đúng cho điện thoại
+    try {
+      await startScannerWithConfig({ facingMode: "environment" });
+      return;
+    } catch {
+      // 2. Fallback: camera trước (user) — cho laptop
+      try {
+        await startScannerWithConfig({ facingMode: "user" });
+        return;
+      } catch {
+        // 3. Cuối cùng: thử từng camera có sẵn
         try {
-          const scanner2 = new Html5Qrcode("qr-reader");
-          scannerRef.current = scanner2;
-          await scanner2.start(
-            { facingMode: "user" },
-            { fps: 10, qrbox: { width: 250, height: 250 } },
-            (decodedText) => {
-              scanner2
-                .stop()
-                .then(() => scanner2.clear())
-                .catch(() => {});
-              onScanRef.current(decodedText);
-            },
-            () => {},
-          );
-          resolved = true;
-        } catch {
+          const devices = await Html5Qrcode.getCameras();
+          if (devices?.length) {
+            await startScannerWithConfig({ deviceId: { exact: devices[0].id } });
+            return;
+          }
+          throw new Error("no camera");
+        } catch (err) {
           const message =
             (err as { name?: string })?.name === "NotAllowedError"
               ? "Bạn đã từ chối quyền truy cập camera. Vui lòng cho phép camera trong trình duyệt!"
@@ -88,7 +74,7 @@ export function QrScanner({ onScan, onClose }: QrScannerProps) {
         }
       }
     }
-  }, []);
+  }, [startScannerWithConfig]);
 
   useEffect(() => {
     startScanner();
