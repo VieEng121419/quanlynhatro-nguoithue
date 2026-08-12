@@ -1,10 +1,16 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import "@fontsource/mona-sans/400.css";
+import "@fontsource/mona-sans/500.css";
+import "@fontsource/mona-sans/600.css";
+import "@fontsource/mona-sans/700.css";
+import "@fontsource/mona-sans/latin-ext-400.css";
+import "@fontsource/mona-sans/latin-ext-500.css";
+import "@fontsource/mona-sans/latin-ext-600.css";
+import "@fontsource/mona-sans/latin-ext-700.css";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
+import { TopBar } from "@/components/TopBar";
 import { BottomNav } from "@/components/BottomNav";
-
-const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
   title: "Nhà Trọ 24h",
@@ -26,10 +32,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="vi" className={inter.variable}>
-      <body className="antialiased min-h-screen bg-[#F8FAFC]">
+    <html lang="vi">
+      <body className="antialiased min-h-screen bg-[#FFF8F6]">
         <Providers>
-          <main className="pb-16">{children}</main>
+          <TopBar />
+          <main className="pt-[72px] pb-16">{children}</main>
           <BottomNav />
         </Providers>
       </body>

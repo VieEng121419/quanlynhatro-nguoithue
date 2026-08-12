@@ -48,7 +48,7 @@ export default function LoginPage() {
 
   return (
     <div className="h-screen bg-[#FFF8F6] flex items-center justify-center p-4">
-      <div className="w-full flex  max-w-[390px] h-full bg-white rounded-xl shadow-[0px_4px_6px_-4px_rgba(0,0,0,0.1),0px_10px_15px_-3px_rgba(0,0,0,0.1)] p-6">
+      <div className="w-full flex justify-center items-center max-w-[390px] h-full bg-white rounded-xl shadow-[0px_4px_6px_-4px_rgba(0,0,0,0.1),0px_10px_15px_-3px_rgba(0,0,0,0.1)] p-6">
         <div className="flex flex-col gap-2 justify-center pb-6">
           {/* Header Section */}
           <div className="pb-6">

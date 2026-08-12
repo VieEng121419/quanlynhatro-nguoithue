@@ -8,6 +8,10 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ["'Mona Sans'", "system-ui", "sans-serif"],
+        mono: ["'Mona Sans'", "monospace"],
+      },
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",

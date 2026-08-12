@@ -75,6 +75,52 @@ src/
   - Lint pass: `✔ No ESLint warnings or errors`
   - Lưu ý: `npx tsc --noEmit` lỗi sẵn do môi trường (`Cannot find type definition file for 'minimatch'`) — **không liên quan** đến code thay đổi
 
+- [x] **Tạo TopBar component (header toàn cục)**
+  - Tạo component: `src/components/TopBar.tsx` dựa trên Figma (node `59-195`)
+  - Cấu trúc: Avatar 40×40 (viền `#E0BFB7`) + tiêu đề "Chào, {tên}" + nút thông báo 44×44 với badge đỏ `#BA1A1A`
+  - Nền `#FFF8F6`, bóng `0px 1px 2px rgba(0,0,0,0.05)`, cao 72px, `fixed top-0`, max-width 390px
+  - Props: `userName`, `avatarUrl`, `unreadCount`, `onNotificationClick` — tự fallback lấy `user.fullName` từ `useAuth()`
+  - **Cấu hình như header toàn cục** (giống `BottomNav` là footer): đặt trong `src/app/layout.tsx` `<TopBar />`, hiển thị mọi trang trừ `/login`
+  - `main` trong layout được thêm `pt-[72px]` để bù chiều cao TopBar cố định
+  - Lint pass: `✔ No ESLint warnings or errors`
+
+- [x] **Tạo DebtAlert component (cảnh báo nợ cước)**
+  - Tạo component: `src/components/ui/debt-alert.tsx` dựa trên Figma (node `59-100`)
+  - Cấu trúc: Icon `TriangleAlert` 22×19 màu `#BA1A1A` + tiêu đề "Cảnh Báo Nợ Cước" (Semi Bold 16px) + message
+  - Nền `#FFDAD6`, rounded-[20px], text màu `#93000A`
+  - Props: `children` (nội dung message) + `className` (tuỳ chỉnh)
+  - Nhận `@/lib/utils` `cn()`, export `{ DebtAlert }`
+  - Đã tích hợp vào `src/app/home/page.tsx` — hiển thị khi hoá đơn có status `UNPAID` hoặc `OVERDUE`
+  - Lint pass: `✔ No ESLint warnings or errors`
+
+- [x] **Cập nhật font Mona Sans cho toàn bộ source**
+  - Cài đặt package `@fontsource/mona-sans` (font của GitHub)
+  - Import CSS `@fontsource/mona-sans/400|500|600|700.css` + `latin-ext-*` (hỗ trợ tiếng Việt) trong `src/app/layout.tsx`
+  - Body dùng `font-sans` mặc định trong `src/app/globals.css`
+  - Cấu hình `fontFamily.sans: ["'Mona Sans'", "system-ui", "sans-serif"]` trong `tailwind.config.ts`
+  - Loại bỏ font `Inter` (Google Fonts) và `JetBrains_Mono` khỏi `layout.tsx`
+  - Lint pass: `✔ No ESLint warnings or errors`
+
+- [x] **Tạo UtilityInfo component (Điện & Nước)**
+  - Tạo component: `src/components/UtilityInfo.tsx` dựa trên Figma (node `59-108`)
+  - Cài đặt `chart.js`, `react-chartjs-2`, `react-day-picker`, `date-fns`
+  - Cấu trúc: Tiêu đề "Điện & Nước tháng {tháng}" + button date picker chọn tháng
+  - 2 bar chart: Điện `#A73414`, Nước `#0051D5`, background `#FFE9E4`
+  - Label số điện (icon Zap) + số nước (icon Droplets)
+  - "Chi phí dự kiến: ~{serviceAmount - 10000}đ"
+  - Nền `#FFFFFF`, radius `20px`
+  - Tích hợp vào `src/app/home/page.tsx` với data mẫu (`electricityUsage=120`, `waterUsage=8`)
+  - Lint pass: `✔ No ESLint warnings or errors`
+
+- [x] **Tạo TransactionHistory component (Lịch sử giao dịch)**
+  - Tạo component: `src/components/TransactionHistory.tsx`
+  - Cấu trúc Card: `rounded-t-[20px]`, box-shadow nhẹ, divider ngang
+  - Header: "Lịch sử giao dịch gần đây" (Bold) + button "Xem tất cả"
+  - Mỗi item 3 cột: Icon tròn (Receipt cho tiền phòng / Archive cho điện nước) + Title/Date + Amount/Status
+  - Phân cách giữa các item bằng `divide-y`
+  - Tích hợp vào `src/app/home/page.tsx` với data mẫu
+  - **Status/Amount mapping**: `PAID` → "Đã thanh toán" (`-amount`), `PARTIAL` → "Chưa thanh toán đủ" (`~amount`), `UNPAID` → "Chưa thanh toán" (`+amount`)
+  - Lint pass: `✔ No ESLint warnings or errors`
 - [x] Dựng sẵn các trang: home, invoices, services, profile, login
 - [x] Bottom navigation (`BottomNav.tsx`) — ẩn trên `/login`
 - [x] Cấu hình PWA (manifest, service worker)

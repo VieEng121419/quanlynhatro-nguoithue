@@ -1,6 +1,9 @@
 "use client";
 
 import { useMyRoom } from "@/hooks/useMyRoom";
+import { DebtAlert } from "@/components/ui/debt-alert";
+import { UtilityInfo } from "@/components/UtilityInfo";
+import { TransactionHistory } from "@/components/TransactionHistory";
 
 export default function HomePage() {
   const { room, loading, error } = useMyRoom();
@@ -37,54 +40,54 @@ export default function HomePage() {
         status: string;
         fromDate: string;
         toDate: string;
+        serviceAmount: number;
       }>;
     }>;
   } | null;
 
   const contract = roomData?.contracts?.[0];
   const latestInvoice = contract?.invoices?.[0];
+  const hasDebt = latestInvoice?.status !== "UNPAID";
+  const serviceAmount = latestInvoice ? Number(latestInvoice.serviceAmount) : 0;
+  const electricityUsage = 120;
+  const waterUsage = 8;
+  const transactions = [
+    {
+      id: 1,
+      type: "rent" as const,
+      title: "Tiền phòng Tháng 9",
+      date: "01/09/2023",
+      amount: 3500000,
+      status: "PARTIAL" as const,
+    },
+    {
+      id: 2,
+      type: "utility" as const,
+      title: "Vợ 1 chai sting",
+      date: "05/08/2023",
+      amount: 10000,
+      status: "UNPAID" as const,
+    },
+  ];
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] p-4">
-      <div className="max-w-[390px] mx-auto flex flex-col gap-4">
-        <h1 className="text-[22px] font-bold text-[#A73414]">
-          Phòng {roomData?.roomNumber}
-        </h1>
-
-        {contract && (
-          <div className="bg-white rounded-xl shadow-sm p-4">
-            <h2 className="text-base font-semibold text-[#251915]">
-              Hợp đồng
-            </h2>
-            <p className="text-sm text-[#58413C] mt-2">
-              Người thuê: {contract.tenantName}
-            </p>
-            <p className="text-sm text-[#58413C]">
-              Giá phòng: {Number(contract.rentPrice).toLocaleString("vi-VN")}đ
-            </p>
-            <p className="text-sm text-[#58413C]">
-              Bắt đầu: {new Date(contract.startDate).toLocaleDateString("vi-VN")}
-            </p>
-          </div>
+    <div className="min-h-[calc(100vh-4rem)]">
+      <div className="max-w-[390px] mx-auto flex flex-col gap-4 p-4">
+        {hasDebt && latestInvoice && (
+          <DebtAlert>
+            Bạn còn nợ{" "}
+            {Number(latestInvoice.totalAmount).toLocaleString("vi-VN")} VNĐ, hạn
+            chót {new Date(latestInvoice.toDate).toLocaleDateString("vi-VN")}.
+          </DebtAlert>
         )}
 
-        {latestInvoice && (
-          <div className="bg-white rounded-xl shadow-sm p-4">
-            <h2 className="text-base font-semibold text-[#251915]">
-              Hoá đơn mới nhất
-            </h2>
-            <p className="text-sm text-[#58413C] mt-2">
-              Kỳ: {new Date(latestInvoice.fromDate).toLocaleDateString("vi-VN")} -{" "}
-              {new Date(latestInvoice.toDate).toLocaleDateString("vi-VN")}
-            </p>
-            <p className="text-sm text-[#58413C]">
-              Tổng: {Number(latestInvoice.totalAmount).toLocaleString("vi-VN")}đ
-            </p>
-            <p className="text-sm text-[#58413C]">
-              Trạng thái: {latestInvoice.status}
-            </p>
-          </div>
-        )}
+        <UtilityInfo
+          electricityUsage={electricityUsage}
+          waterUsage={waterUsage}
+          serviceAmount={serviceAmount}
+        />
+
+        <TransactionHistory transactions={transactions} />
       </div>
     </div>
   );
