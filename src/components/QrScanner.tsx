@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { Html5Qrcode } from "html5-qrcode";
+import { Html5Qrcode, Html5QrcodeScannerState } from "html5-qrcode";
 import { X, RefreshCw } from "lucide-react";
 
 interface QrScannerProps {
@@ -12,6 +12,7 @@ interface QrScannerProps {
 export function QrScanner({ onScan, onClose }: QrScannerProps) {
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const onScanRef = useRef(onScan);
+  const stoppingRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
 
@@ -19,6 +20,27 @@ export function QrScanner({ onScan, onClose }: QrScannerProps) {
   useEffect(() => {
     onScanRef.current = onScan;
   }, [onScan]);
+
+  const stopScanner = useCallback(async () => {
+    const scanner = scannerRef.current;
+    if (!scanner || stoppingRef.current) return;
+
+    // Chỉ dừng nếu scanner đang chạy hoặc đang tạm dừng
+    const state = scanner.getState();
+    if (state !== Html5QrcodeScannerState.SCANNING && state !== Html5QrcodeScannerState.PAUSED) {
+      return;
+    }
+
+    stoppingRef.current = true;
+    try {
+      await scanner.stop();
+      await scanner.clear();
+    } catch {
+      // Bỏ qua lỗi nếu scanner đã dừng
+    } finally {
+      stoppingRef.current = false;
+    }
+  }, []);
 
   const startScannerWithConfig = useCallback(
     (config: { facingMode?: string; deviceId?: { exact: string } }) => {
@@ -30,10 +52,7 @@ export function QrScanner({ onScan, onClose }: QrScannerProps) {
         { fps: 10, qrbox: { width: 250, height: 250 } },
         (decodedText) => {
           // Dừng scanner sau khi quét được để tránh quét lặp
-          scannerRef.current
-            ?.stop()
-            .then(() => scannerRef.current?.clear())
-            .catch(() => {});
+          stopScanner();
           onScanRef.current(decodedText);
         },
         () => {
@@ -41,7 +60,7 @@ export function QrScanner({ onScan, onClose }: QrScannerProps) {
         },
       );
     },
-    [],
+    [stopScanner],
   );
 
   const startScanner = useCallback(async () => {
@@ -83,14 +102,9 @@ export function QrScanner({ onScan, onClose }: QrScannerProps) {
   // Cleanup khi unmount
   useEffect(() => {
     return () => {
-      if (scannerRef.current) {
-        scannerRef.current
-          .stop()
-          .then(() => scannerRef.current?.clear())
-          .catch(() => {});
-      }
+      stopScanner();
     };
-  }, []);
+  }, [stopScanner]);
 
   const handleRetry = () => setRetryCount((c) => c + 1);
 
