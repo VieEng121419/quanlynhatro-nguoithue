@@ -126,6 +126,25 @@ src/
 - [x] Cấu hình PWA (manifest, service worker)
 - [x] UI components cơ bản: button, card, badge, dialog, tabs, avatar, skeleton, toast, input, sheet
 
+- [x] **Fix bug "Cannot stop, scanner is not running or paused" trong QrScanner**
+  - **Nguyên nhân:** Race condition — khi quét được QR, callback gọi `stop()` (async) rồi unmount → cleanup gọi `stop()` lần 2 trên cùng scanner → lỗi
+  - **Fix:** Tạo hàm `stopScanner()` dùng chung với 3 lớp bảo vệ:
+    1. Cờ `stoppingRef` chống gọi `stop()` đồng thời
+    2. Kiểm tra `scanner.getState()` — chỉ dừng khi `SCANNING`/`PAUSED`
+    3. Bọc try/catch bỏ qua lỗi
+  - Cả callback quét QR lẫn cleanup unmount đều gọi chung `stopScanner()`
+  - `npx tsc --noEmit` pass (exit code 0)
+  - **Tài liệu chi tiết:** `docs/QR_SCANNER_FLOW.md`
+- [x] **Fix bug "Cannot stop, scanner is not running or paused" trong QrScanner**
+  - **Nguyên nhân:** Race condition — khi quét được QR, callback gọi `stop()` (async) rồi unmount → cleanup gọi `stop()` lần 2 trên cùng scanner → lỗi
+  - **Fix:** Tạo hàm `stopScanner()` dùng chung với 3 lớp bảo vệ:
+    1. Cờ `stoppingRef` chống gọi `stop()` đồng thời
+    2. Kiểm tra `scanner.getState()` — chỉ dừng khi `SCANNING`/`PAUSED`
+    3. Bọc try/catch bỏ qua lỗi
+  - Cả callback quét QR lẫn cleanup unmount đều gọi chung `stopScanner()`
+  - `npx tsc --noEmit` pass (exit code 0)
+  - **Tài liệu chi tiết:** `docs/QR_SCANNER_FLOW.md`
+
 ---
 
 ## 🚀 Next Steps

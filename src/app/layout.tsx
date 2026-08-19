@@ -36,7 +36,7 @@ export default function RootLayout({
       <body className="antialiased min-h-screen bg-[#FFF8F6]">
         <Providers>
           <TopBar />
-          <main className="pt-[72px] pb-16">{children}</main>
+          <main className="pb-16">{children}</main>
           <BottomNav />
         </Providers>
       </body>
