@@ -38,4 +38,39 @@ export const INVOICE_STATUS_LABELS: Record<string, string> = {
   PAID: "ĐÃ THANH TOÁN",
   CANCELED: "ĐÃ HỦY",
   OVERDUE: "QUÁ HẠN",
+  DUE: "SẮP ĐẾN HẠN",
 };
+
+/**
+ * Kiểm tra hoá đơn đã quá hạn thanh toán (now > toDate)
+ */
+export function isOverdue(toDate: string): boolean {
+  return new Date(toDate).getTime() < Date.now();
+}
+
+/**
+ * Kiểm tra hoá đơn sắp đến hạn (còn trong vòng `days` ngày nữa là hết hạn)
+ * Ví dụ: toDate còn cách 10 ngày → true
+ */
+export function isDueSoon(toDate: string, days = 10): boolean {
+  const dueTime = new Date(toDate).getTime();
+  const now = Date.now();
+  return dueTime >= now && dueTime - now <= days * 24 * 60 * 60 * 1000;
+}
+
+/**
+ * Tính trạng thái hiển thị thực tế của hoá đơn:
+ * - UNPAID/PARTIAL đã quá hạn → OVERDUE
+ * - UNPAID/PARTIAL còn trong vòng 10 ngày tới hạn → DUE
+ * - Các trường hợp khác giữ nguyên status từ API
+ */
+export function getInvoiceDisplayStatus(
+  status: string,
+  toDate: string,
+): string {
+  if (status === "UNPAID" || status === "PARTIAL") {
+    if (isOverdue(toDate)) return "OVERDUE";
+    if (isDueSoon(toDate)) return "DUE";
+  }
+  return status;
+}

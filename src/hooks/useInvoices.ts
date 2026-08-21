@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { apiClient } from "@/lib/api";
 import { useMyRoom } from "@/hooks/useMyRoom";
 
-export type InvoiceStatus = "DRAFT" | "UNPAID" | "PARTIAL" | "PAID" | "CANCELED" | "OVERDUE";
+export type InvoiceStatus = "DRAFT" | "UNPAID" | "PARTIAL" | "PAID" | "CANCELED" | "OVERDUE" | "DUE";
 
 export interface Invoice {
   id: number;

@@ -2,18 +2,21 @@
 
 import { useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
-import { useInvoices, type InvoiceStatus } from "@/hooks/useInvoices";
+import { useInvoices } from "@/hooks/useInvoices";
+import { getInvoiceDisplayStatus } from "@/lib/invoice-utils";
 import { InvoiceCard } from "@/components/invoice/InvoiceCard";
 
-type TabKey = "all" | "unpaid" | "overdue";
+type TabKey = "all" | "unpaid" | "overdue" | "paid";
 
 const TABS: Array<{ key: TabKey; label: string }> = [
   { key: "all", label: "Tất cả" },
   { key: "unpaid", label: "Chưa thanh toán" },
   { key: "overdue", label: "Quá hạn" },
+  { key: "paid", label: "Đã thanh toán" },
 ];
 
-const UNPAID_STATUSES: InvoiceStatus[] = ["UNPAID", "PARTIAL"];
+// Các trạng thái hiển thị thuộc nhóm "Chưa thanh toán" (chưa quá hạn)
+const UNPAID_DISPLAY_STATUSES = ["UNPAID", "PARTIAL", "DUE"];
 
 export default function InvoicesPage() {
   const { invoices, loading, error } = useInvoices();
@@ -21,10 +24,21 @@ export default function InvoicesPage() {
 
   const filteredInvoices = useMemo(() => {
     if (activeTab === "unpaid") {
-      return invoices.filter((inv) => UNPAID_STATUSES.includes(inv.status));
+      return invoices.filter((inv) =>
+        UNPAID_DISPLAY_STATUSES.includes(
+          getInvoiceDisplayStatus(inv.status, inv.toDate)
+        )
+      );
     }
     if (activeTab === "overdue") {
-      return invoices.filter((inv) => inv.status === "OVERDUE");
+      return invoices.filter(
+        (inv) => getInvoiceDisplayStatus(inv.status, inv.toDate) === "OVERDUE"
+      );
+    }
+    if (activeTab === "paid") {
+      return invoices.filter(
+        (inv) => getInvoiceDisplayStatus(inv.status, inv.toDate) === "PAID"
+      );
     }
     return invoices;
   }, [invoices, activeTab]);
@@ -49,7 +63,7 @@ export default function InvoicesPage() {
                   "px-4 py-3 rounded-[20px] text-[14px] font-semibold transition-colors whitespace-nowrap",
                   activeTab === tab.key
                     ? "bg-[#0051D5] text-white shadow-[0px_1px_2px_rgba(0,0,0,0.05)]"
-                    : "bg-[#FBE3DD] text-[#58413C]",
+                    : "bg-[#FBE3DD] text-[#58413C]"
                 )}
               >
                 {tab.label}
@@ -61,7 +75,9 @@ export default function InvoicesPage() {
         {/* Content */}
         {loading ? (
           <div className="flex items-center justify-center py-16">
-            <p className="text-lg text-[#6B7280]">Đang tải danh sách hoá đơn...</p>
+            <p className="text-lg text-[#6B7280]">
+              Đang tải danh sách hoá đơn...
+            </p>
           </div>
         ) : error ? (
           <div className="flex items-center justify-center py-16 px-4">

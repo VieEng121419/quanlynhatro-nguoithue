@@ -1,8 +1,22 @@
 "use client";
 
-import { TriangleAlert, Receipt, CheckCircle2, ChevronRight, FileText, XCircle } from "lucide-react";
+import {
+  TriangleAlert,
+  Receipt,
+  CheckCircle2,
+  ChevronRight,
+  FileText,
+  XCircle,
+  Clock,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
-import { formatCurrency, formatInvoicePeriod, formatDueDate, INVOICE_STATUS_LABELS } from "@/lib/invoice-utils";
+import {
+  formatCurrency,
+  formatInvoicePeriod,
+  formatDueDate,
+  INVOICE_STATUS_LABELS,
+  getInvoiceDisplayStatus,
+} from "@/lib/invoice-utils";
 import type { Invoice } from "@/hooks/useInvoices";
 
 interface InvoiceCardProps {
@@ -11,25 +25,26 @@ interface InvoiceCardProps {
 }
 
 export function InvoiceCard({ invoice, className }: InvoiceCardProps) {
-  const { status } = invoice;
-  const label = INVOICE_STATUS_LABELS[status] ?? status;
+  const displayStatus = getInvoiceDisplayStatus(invoice.status, invoice.toDate);
+  // const displayStatus = 'UNPAID'
+  const label = INVOICE_STATUS_LABELS[displayStatus] ?? displayStatus;
   const period = formatInvoicePeriod(invoice.fromDate);
   const dueDate = formatDueDate(invoice.toDate);
   const amount = formatCurrency(invoice.totalAmount);
 
   // Card quá hạn: vạch đỏ trái, nền trắng, viền hồng
-  if (status === "OVERDUE") {
+  if (displayStatus === "OVERDUE") {
     return (
       <div
         className={cn(
           "relative bg-white border border-[#FFDAD6] rounded-[20px] shadow-[0px_2px_8px_rgba(0,0,0,0.08)] overflow-hidden",
-          className,
+          className
         )}
       >
         {/* Vạch đỏ trái */}
         <div className="absolute left-0 top-0 bottom-0 w-[4px] bg-[#BA1A1A]" />
 
-        <div className="pl-8 pr-4 py-4">
+        <div className="pl-4 pr-4 py-4">
           {/* Header */}
           <div className="flex items-center gap-3">
             {/* Icon */}
@@ -56,12 +71,16 @@ export function InvoiceCard({ invoice, className }: InvoiceCardProps) {
           </div>
 
           {/* Divider */}
-          <div className="border-t border-[#FBE3DD] mt-3 pt-3 flex items-center justify-between pl-8">
+          <div className="border-t border-[#FBE3DD] mt-3 pt-3 flex items-center justify-between pl-1">
             <div>
-              <p className="text-[14px] text-[#58413C] leading-[20px]">Tổng tiền:</p>
-              <p className="text-[14px] font-bold text-[#A73414] leading-[20px]">{amount}</p>
+              <p className="text-[14px] text-[#58413C] leading-[20px]">
+                Tổng tiền:
+              </p>
+              <p className="pt-1 text-[16px] font-bold text-[#A73414] leading-[20px]">
+                {amount}
+              </p>
             </div>
-            <div className="w-12 h-12 rounded-[20px] bg-[#FBE3DD] flex items-center justify-center shrink-0">
+            <div className="w-[44px] h-[44px] rounded-[20px] bg-[#FBE3DD] flex items-center justify-center shrink-0">
               <ChevronRight className="w-4 h-4 text-[#251915]" />
             </div>
           </div>
@@ -70,13 +89,67 @@ export function InvoiceCard({ invoice, className }: InvoiceCardProps) {
     );
   }
 
-  // Card chưa thanh toán / chưa thanh toán đủ: nền trắng, icon xanh
-  if (status === "UNPAID" || status === "PARTIAL") {
+  // Card sắp đến hạn (DUE): icon đồng hồ, badge vàng
+  if (displayStatus === "DUE") {
     return (
       <div
         className={cn(
           "bg-white rounded-[20px] shadow-[0px_2px_8px_rgba(0,0,0,0.08)] overflow-hidden",
-          className,
+          className
+        )}
+      >
+        <div className="px-4 py-4">
+          {/* Header */}
+          <div className="flex items-center gap-3">
+            {/* Icon */}
+            <div className="w-12 h-12 rounded-[20px] bg-[#FFF4E5] flex items-center justify-center shrink-0">
+              <Clock className="w-5 h-5 text-[#B26A00]" />
+            </div>
+
+            {/* Title + Status */}
+            <div className="flex-1 min-w-0 flex gap-1.5 flex-col">
+              <h3 className="text-[14px] font-semibold text-[#251915] leading-[20px] truncate">
+                {period}
+              </h3>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="inline-flex px-2 py-0.5 bg-[#FFF4E5] rounded-[20px]">
+                  <span className="text-[12px] font-bold tracking-[0.05em] text-[#B26A00] leading-[16px] whitespace-nowrap">
+                    {label}
+                  </span>
+                </span>
+                <span className="text-[14px] font-medium tracking-[0.02em] text-[#58413C] leading-[18px] whitespace-nowrap">
+                  Hạn: {dueDate}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="border-t border-[#FBE3DD] mt-3 pt-3 flex items-center justify-between">
+            <div>
+              <p className="text-[14px] text-[#58413C] leading-[20px]">
+                Tổng tiền:
+              </p>
+              <p className="pt-1 text-[16px] font-bold text-[#251915] leading-[20px]">
+                {amount}
+              </p>
+            </div>
+            <div className="w-[44px] h-[44px] rounded-[20px] bg-[#0051D5] shadow-[0px_1px_2px_rgba(0,0,0,0.05)] flex items-center justify-center shrink-0">
+              <ChevronRight className="w-[19px] h-[18px] text-white" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Card chưa thanh toán / chưa thanh toán đủ: nền trắng, icon xanh
+  if (displayStatus === "UNPAID" || displayStatus === "PARTIAL") {
+    return (
+      <div
+        className={cn(
+          "bg-white rounded-[20px] shadow-[0px_2px_8px_rgba(0,0,0,0.08)] overflow-hidden",
+          className
         )}
       >
         <div className="px-4 py-4">
@@ -108,10 +181,14 @@ export function InvoiceCard({ invoice, className }: InvoiceCardProps) {
           {/* Divider */}
           <div className="border-t border-[#FBE3DD] mt-3 pt-3 flex items-center justify-between">
             <div>
-              <p className="text-[14px] text-[#58413C] leading-[20px]">Tổng tiền:</p>
-              <p className="text-[14px] font-bold text-[#251915] leading-[20px]">{amount}</p>
+              <p className="text-[14px] text-[#58413C] leading-[20px]">
+                Tổng tiền:
+              </p>
+              <p className="pt-1 text-[16px] font-bold text-[#251915] leading-[20px]">
+                {amount}
+              </p>
             </div>
-            <div className="w-12 h-12 rounded-[20px] bg-[#0051D5] shadow-[0px_1px_2px_rgba(0,0,0,0.05)] flex items-center justify-center shrink-0">
+            <div className="w-[44px] h-[44px] rounded-[20px] bg-[#0051D5] shadow-[0px_1px_2px_rgba(0,0,0,0.05)] flex items-center justify-center shrink-0">
               <ChevronRight className="w-[19px] h-[18px] text-white" />
             </div>
           </div>
@@ -121,12 +198,12 @@ export function InvoiceCard({ invoice, className }: InvoiceCardProps) {
   }
 
   // Card đã thanh toán: opacity 0.75, icon check xanh
-  if (status === "PAID") {
+  if (displayStatus === "PAID") {
     return (
       <div
         className={cn(
           "bg-white rounded-[20px] shadow-[0px_2px_8px_rgba(0,0,0,0.08)] overflow-hidden opacity-75",
-          className,
+          className
         )}
       >
         <div className="px-4 py-4">
@@ -153,10 +230,17 @@ export function InvoiceCard({ invoice, className }: InvoiceCardProps) {
           </div>
 
           {/* Divider */}
-          <div className="border-t border-[#FBE3DD] mt-3 pt-3 flex items-center justify-between">
-            <p className="text-[14px] font-semibold text-[#58413C] leading-[20px]">{amount}</p>
+          <div className="border-t border-[#FBE3DD] mt-3 pt-3 flex items-center justify-between pl-1">
+            <div>
+              <p className="text-[14px] text-[#58413C] leading-[20px]">
+                Tổng tiền:
+              </p>
+              <p className="pt-1 text-[16px] font-semibold text-[#58413C] leading-[20px]">
+                {amount}
+              </p>
+            </div>
             <div className="flex items-center justify-center">
-              <ChevronRight className="w-[7.4px] h-3 text-[#595C5E]" />
+              <ChevronRight className="w-[16px] h-[16px] text-[#595C5E]" />
             </div>
           </div>
         </div>
@@ -165,12 +249,12 @@ export function InvoiceCard({ invoice, className }: InvoiceCardProps) {
   }
 
   // Card nháp / đã hủy: mờ, badge xám
-  const isDraft = status === "DRAFT";
+  const isDraft = displayStatus === "DRAFT";
   return (
     <div
       className={cn(
         "bg-white rounded-[20px] shadow-[0px_2px_8px_rgba(0,0,0,0.08)] overflow-hidden opacity-75",
-        className,
+        className
       )}
     >
       <div className="px-4 py-4">
@@ -185,29 +269,31 @@ export function InvoiceCard({ invoice, className }: InvoiceCardProps) {
             )}
           </div>
 
-            {/* Title + Status */}
-            <div className="flex-1 min-w-0 flex gap-1.5 flex-col">
-              <h3 className="text-[14px] font-semibold text-[#251915] leading-[20px] truncate">
-                {period}
-              </h3>
-              <div className="flex items-center gap-2">
-                <span className="inline-flex px-2 py-0.5 bg-[#EEE9E7] rounded-[20px]">
-                  <span className="text-[12px] font-bold tracking-[0.05em] text-[#8A7D78] leading-[16px]">
-                    {label}
-                  </span>
+          {/* Title + Status */}
+          <div className="flex-1 min-w-0 flex gap-1.5 flex-col">
+            <h3 className="text-[14px] font-semibold text-[#251915] leading-[20px] truncate">
+              {period}
+            </h3>
+            <div className="flex items-center gap-2">
+              <span className="inline-flex px-2 py-0.5 bg-[#EEE9E7] rounded-[20px]">
+                <span className="text-[12px] font-bold tracking-[0.05em] text-[#8A7D78] leading-[16px]">
+                  {label}
                 </span>
-                {!isDraft && (
-                  <span className="text-[14px] font-medium tracking-[0.02em] text-[#58413C] leading-[18px]">
-                    Hạn: {dueDate}
-                  </span>
-                )}
-              </div>
+              </span>
+              {!isDraft && (
+                <span className="text-[14px] font-medium tracking-[0.02em] text-[#58413C] leading-[18px]">
+                  Hạn: {dueDate}
+                </span>
+              )}
             </div>
+          </div>
         </div>
 
         {/* Divider */}
         <div className="border-t border-[#F0E6E2] mt-3 pt-3 flex items-center justify-between">
-          <p className="text-[14px] font-semibold text-[#58413C] leading-[20px]">{amount}</p>
+          <p className="pt-1 text-[16px] font-semibold text-[#58413C] leading-[20px]">
+            {amount}
+          </p>
           <div className="flex items-center justify-center">
             <ChevronRight className="w-[7.4px] h-3 text-[#595C5E]" />
           </div>
