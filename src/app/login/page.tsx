@@ -18,8 +18,8 @@ export default function LoginPage() {
   const [showManual, setShowManual] = useState(false);
 
   const handleLogin = useCallback(
-    async (roomCode: string) => {
-      const result = await qrLogin(roomCode);
+    async (qrCode: string) => {
+      const result = await qrLogin(qrCode);
       if (result) {
         login(result.accessToken, result.user);
         router.push("/home");
@@ -29,9 +29,9 @@ export default function LoginPage() {
   );
 
   const handleScan = useCallback(
-    (roomCode: string) => {
+    (qrCode: string) => {
       setShowScanner(false);
-      handleLogin(roomCode);
+      handleLogin(qrCode);
     },
     [handleLogin],
   );

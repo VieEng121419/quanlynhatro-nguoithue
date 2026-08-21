@@ -15,13 +15,13 @@ export function useQrLogin() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const login = async (roomCode: string): Promise<QrLoginResponse | null> => {
+  const login = async (qrCode: string): Promise<QrLoginResponse | null> => {
     setLoading(true);
     setError(null);
     try {
       const { data } = await apiClient.post<{ data: QrLoginResponse }>(
         "/auth/qr-login",
-        { roomCode },
+        { qrCode },
       );
       return data.data;
     } catch (err: unknown) {
