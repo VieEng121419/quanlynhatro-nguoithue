@@ -71,7 +71,7 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-[calc(100vh-4rem)] pt-[72px] pb-[30px] bg-[#FFF8F6]">
-      <div className="max-w-[650px] mx-auto px-[26px] flex flex-col">
+      <div className="max-w-[650px] mx-auto px-4 flex flex-col">
         {/* Khu vực phía trên */}
         <div className="flex flex-col items-center text-center pt-[55px]">
           {/* Avatar */}
