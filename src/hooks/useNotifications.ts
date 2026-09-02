@@ -28,6 +28,27 @@ export function useNotifications() {
   }, []);
   useEffect(() => {
     refresh().catch(() => setLoading(false));
+
+    const handleFocus = () => {
+      void refresh();
+    };
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        void refresh();
+      }
+    };
+    const intervalId = window.setInterval(() => {
+      void refresh();
+    }, 30000);
+
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.clearInterval(intervalId);
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, [refresh]);
   const read = async (id: number) => {
     await apiClient.patch(`/notification/${id}/read`);

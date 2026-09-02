@@ -2,19 +2,20 @@
 import { useState } from "react";
 import { apiClient } from "@/lib/api";
 
+function urlBase64ToUint8Array(value: string) {
+  const padding = "=".repeat((4 - (value.length % 4)) % 4);
+  const base64 = (value + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const rawData = window.atob(base64);
+  return Uint8Array.from(Array.from(rawData).map((character) => character.charCodeAt(0)));
+}
+
 export function PushRegistration() {
   const [state, setState] = useState<
-    "idle" | "enabled" | "denied" | "unsupported"
+    "idle" | "enabled" | "denied" | "unsupported" | "error"
   >("idle");
   const enable = async () => {
-    debugger;
     const key = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-    if (
-      !key ||
-      !("serviceWorker" in navigator) ||
-      !("PushManager" in window) ||
-      !("Notification" in window)
-    ) {
+    if (!key || !("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) {
       setState("unsupported");
       return;
     }
@@ -24,10 +25,11 @@ export function PushRegistration() {
       return;
     }
     try {
-      const registration = await navigator.serviceWorker.ready;
+      const registration = await navigator.serviceWorker.register("/sw.js");
+      await navigator.serviceWorker.ready;
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: key,
+        applicationServerKey: urlBase64ToUint8Array(key),
       });
       const json = subscription.toJSON();
       if (!json.endpoint || !json.keys?.p256dh || !json.keys.auth)
@@ -39,7 +41,7 @@ export function PushRegistration() {
       });
       setState("enabled");
     } catch {
-      setState("unsupported");
+      setState("error");
     }
   };
   if (state === "enabled")
@@ -53,7 +55,13 @@ export function PushRegistration() {
   if (state === "unsupported")
     return (
       <p className="text-xs text-[#6B7280]">
-        Trình duyệt chưa hỗ trợ thông báo đẩy
+        Trình duyệt hoặc môi trường hiện tại chưa hỗ trợ thông báo đẩy
+      </p>
+    );
+  if (state === "error")
+    return (
+      <p className="text-xs text-[#6B7280]">
+        Không thể bật thông báo đẩy. Vui lòng thử lại.
       </p>
     );
   return (
