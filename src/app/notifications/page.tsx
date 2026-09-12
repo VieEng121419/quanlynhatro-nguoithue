@@ -1,48 +1,60 @@
 "use client";
 import Link from "next/link";
-import { Bell, BellRing, CheckCircle2, ChevronRight, Receipt, TriangleAlert } from "lucide-react";
+import {
+  Bell,
+  BellRing,
+  CheckCircle2,
+  ChevronRight,
+  CircleDollarSign,
+  Receipt,
+} from "lucide-react";
 import { useNotifications } from "@/hooks/useNotifications";
 import { PushRegistration } from "@/components/PushRegistration";
 
 interface NotificationTypeMeta {
+  color: string;
+  backgroundColor?: string;
   icon: React.ReactNode;
-  iconBgClass: string;
 }
 
 function notificationTypeMeta(type: string): NotificationTypeMeta {
   switch (type) {
-    case "INVOICE_UNPAID":
+    case "rent":
       return {
-        icon: <Receipt className="w-[18px] h-[20px] text-white" />,
-        iconBgClass: "bg-[#316BF3]",
+        color: "#A73414",
+        backgroundColor: "#FFDBD2",
+        icon: <Receipt className={`h-5 w-5 text-[#A73414]`} />,
       };
-    case "INVOICE_PAID":
+    case "utility":
       return {
-        icon: <CheckCircle2 className="w-5 h-5 text-[#137333]" />,
-        iconBgClass: "bg-[#E6F4EA]",
+        color: "#0051D5",
+        backgroundColor: "#DBE1FF",
+        icon: <CircleDollarSign className={`h-5 w-5 text-[#0051D5] font-medium`} />,
       };
-    case "ROOM_TAB_CREATED":
+    case "trans_successful":
       return {
-        icon: <TriangleAlert className="w-[22px] h-[19px] text-[#BA1A1A]" />,
-        iconBgClass: "bg-[#FFDAD6]",
+        color: "#219653",
+        backgroundColor: "#C8FACD",
+        icon: <CheckCircle2 className={`h-5 w-5 text-[#219653]`} />,
       };
+    case "general":
     default:
       return {
-        icon: <Bell className="w-5 h-5 text-[#58413C]" />,
-        iconBgClass: "bg-[#F5DDD8]",
+        color: "#595C5E",
+        backgroundColor: "#E0E3E5",
+        icon: <Bell className={`h-5 w-5 text-[#595C5E]`} />,
       };
   }
 }
 
 function formatNotificationTime(value: string): string {
   const diffMinutes = (Date.now() - new Date(value).getTime()) / 60000;
-  if (diffMinutes < 1) return "acumă";
-  if (diffMinutes < 60)
-    return `acumă ${Math.floor(diffMinutes)} min`;
+  if (diffMinutes < 1) return "vừa xong";
+  if (diffMinutes < 60) return `${Math.floor(diffMinutes)} phút trước`;
   const hours = Math.floor(diffMinutes / 60);
-  if (hours < 24) return `acumă ${hours} oră${hours === 1 ? "" : "ri"}`;
+  if (hours < 24) return `${hours} giờ trước`;
   const days = Math.floor(hours / 24);
-  if (days < 7) return `acumă ${days} zi${days === 1 ? "" : "le"}`;
+  if (days < 7) return `${days} ngày trước`;
   return new Date(value).toLocaleDateString("vi-VN", {
     day: "numeric",
     month: "short",
@@ -92,7 +104,7 @@ export default function NotificationsPage() {
               <Bell className="w-7 h-7 text-[#A73414]" strokeWidth={1.5} />
             </span>
             <p className="text-[16px] font-semibold text-[#251915]">
-              Chư có thông bá
+              Chưa có thông báo
             </p>
           </div>
         ) : (
@@ -102,12 +114,15 @@ export default function NotificationsPage() {
               return (
                 <div
                   key={item.id}
-                  className={`relative bg-white rounded-[20px] shadow-[0px_2px_8px_rgba(0,0,0,0.08)] overflow-hidden ${
+                  className={`relative overflow-hidden rounded-[20px] bg-white shadow-[0px_2px_8px_rgba(0,0,0,0.08)] ${
                     item.isRead ? "opacity-70" : ""
                   }`}
                 >
                   {!item.isRead && (
-                    <span className="absolute left-0 top-0 bottom-0 w-[4px] bg-[#A73414]" />
+                    <span
+                      className="absolute bottom-0 left-0 top-0 w-[4px]"
+                      style={{ backgroundColor: meta.color }}
+                    />
                   )}
                   <button
                     type="button"
@@ -115,7 +130,8 @@ export default function NotificationsPage() {
                     className="w-full text-left px-4 py-4 flex items-start gap-3"
                   >
                     <span
-                      className={`w-12 h-12 rounded-[20px] ${meta.iconBgClass} flex items-center justify-center shrink-0`}
+                      className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[20px]"
+                      style={{ backgroundColor: meta.backgroundColor }}
                     >
                       {meta.icon}
                     </span>
@@ -129,7 +145,10 @@ export default function NotificationsPage() {
                       >
                         <span className="truncate">{item.title}</span>
                         {!item.isRead && (
-                          <span className="w-2 h-2 rounded-full bg-[#BA1A1A] shrink-0" />
+                          <span
+                            className="h-2 w-2 shrink-0 rounded-full"
+                            style={{ backgroundColor: meta.color }}
+                          />
                         )}
                       </span>
                       <span className="mt-0.5 block text-[13px] leading-[18px] text-[#58413C] line-clamp-2">
@@ -166,7 +185,7 @@ export default function NotificationsPage() {
                 Thông báo đẩy
               </p>
               <p className="mt-0.5 text-[12px] text-[#6B7280]">
-                Nhận thông báo push pentru hoá donă și transakce noi.
+                Nhận thông báo push cho hóa đơn và giao dịch mới.
               </p>
             </div>
           </div>

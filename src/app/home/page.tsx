@@ -1,12 +1,23 @@
 "use client";
 
+import { useEffect } from "react";
 import { useMyRoom } from "@/hooks/useMyRoom";
 import { DebtAlert } from "@/components/ui/debt-alert";
 import { UtilityInfo } from "@/components/UtilityInfo";
 import { TransactionHistory } from "@/components/TransactionHistory";
+import { BellRing } from "lucide-react";
+import { PushRegistration } from "@/components/PushRegistration";
 
 export default function HomePage() {
   const { room, loading, error } = useMyRoom();
+
+  useEffect(() => {
+    if (loading || error || !("serviceWorker" in navigator)) return;
+
+    void navigator.serviceWorker.register("/sw.js").catch(() => {
+      // Push registration is optional and must not block the home page.
+    });
+  }, [loading, error]);
 
   if (loading) {
     return (
@@ -80,6 +91,25 @@ export default function HomePage() {
             chót {new Date(latestInvoice.toDate).toLocaleDateString("vi-VN")}.
           </DebtAlert>
         )}
+
+        <section className="overflow-hidden rounded-[20px] bg-white shadow-[0px_2px_8px_rgba(0,0,0,0.08)]">
+          <div className="flex items-center gap-3 px-4 py-3.5">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[20px] bg-[#FBE3DD]">
+              <BellRing className="h-5 w-5 text-[#A73414]" strokeWidth={1.5} />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-[14px] font-semibold text-[#251915]">
+                Thông báo đẩy
+              </p>
+              <p className="mt-0.5 text-[12px] text-[#6B7280]">
+                Nhận thông báo push cho hóa đơn và giao dịch mới.
+              </p>
+            </div>
+          </div>
+          <div className="px-4 py-3">
+            <PushRegistration />
+          </div>
+        </section>
 
         <UtilityInfo
           electricityUsage={electricityUsage}
