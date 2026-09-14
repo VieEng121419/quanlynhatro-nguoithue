@@ -18,13 +18,16 @@ interface MenuRowProps {
   badge?: number;
   danger?: boolean;
   onClick?: () => void;
+  trailing?: React.ReactNode;
 }
 
-function MenuRow({ icon, label, badge, danger, onClick }: MenuRowProps) {
+function MenuRow({ icon, label, badge, danger, onClick, trailing }: MenuRowProps) {
   return (
-    <button
-      type="button"
+    <div
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
       onClick={onClick}
+      onKeyDown={(event) => { if (onClick && (event.key === "Enter" || event.key === " ")) onClick(); }}
       className="flex items-center w-full h-[55px] px-[26px] transition-colors hover:bg-black/[0.03] active:bg-black/[0.06]"
     >
       {/* Icon */}
@@ -46,13 +49,13 @@ function MenuRow({ icon, label, badge, danger, onClick }: MenuRowProps) {
           </span>
         )}
 
-      {/* Chevron */}
-      {danger ? (
+      {trailing}
+      {!trailing && (danger ? (
         <LogOut className="w-[28px] h-[28px] text-[#C0392B]" />
       ) : (
         <ChevronRight className="w-[28px] h-[28px] text-[#7A6F6A]" />
-      )}
-    </button>
+      ))}
+    </div>
   );
 }
 
@@ -115,7 +118,7 @@ export default function ProfilePage() {
               icon={<Bell className="w-[24px] h-[24px]" strokeWidth={1.5} />}
               label="Thông báo"
               badge={3}
-              onClick={() => {}}
+              onClick={() => router.push("/profile/notifications")}
             />
             <div className="h-[1px] bg-[#3A3A3A]/[0.06]" />
 
