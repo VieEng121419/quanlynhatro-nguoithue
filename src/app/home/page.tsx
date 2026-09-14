@@ -80,7 +80,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-[calc(100vh-4rem)] mt-[72px]">
-      <div className="max-w-[390px] mx-auto flex flex-col gap-4 p-4">
+      <div className="max-w-[768px] mx-auto flex flex-col gap-4 p-4">
         {hasDebt && latestInvoice && (
           <DebtAlert>
             Bạn còn nợ{" "}

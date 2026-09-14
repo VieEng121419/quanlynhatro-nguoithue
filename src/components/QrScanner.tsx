@@ -110,7 +110,7 @@ export function QrScanner({ onScan, onClose }: QrScannerProps) {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/90 flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-[390px]">
+      <div className="w-full max-w-[768px]">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-white">Quét mã QR</h2>
           <button

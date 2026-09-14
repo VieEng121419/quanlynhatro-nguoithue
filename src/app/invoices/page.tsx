@@ -45,7 +45,7 @@ export default function InvoicesPage() {
 
   return (
     <div className="min-h-[calc(100vh-4rem)] mt-[72px]">
-      <div className="max-w-[390px] mx-auto flex flex-col gap-6 px-4 pb-4 pt-4">
+      <div className="max-w-[768px] mx-auto flex flex-col gap-6 px-4 pb-4 pt-4">
         {/* Header */}
         <div className="flex flex-col items-center gap-4">
           <h1 className="text-[20px] font-bold text-[#251915] text-left w-full">

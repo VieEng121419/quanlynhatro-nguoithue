@@ -42,7 +42,7 @@ export function TopBar({
 
   return (
     <header className="fixed top-0 left-0 right-0 z-40 h-[72px] bg-[#FFF8F6] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)]">
-      <div className="max-w-[390px] h-full mx-auto px-4 flex items-center justify-between">
+      <div className="max-w-[768px] h-full mx-auto px-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Avatar className="h-10 w-10 border border-[#E0BFB7]">
             <AvatarImage src={avatarUrl} alt={name} />
