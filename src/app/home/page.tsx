@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useMyRoom } from "@/hooks/useMyRoom";
 import { DebtAlert } from "@/components/ui/debt-alert";
 import { UtilityInfo } from "@/components/UtilityInfo";
@@ -10,14 +10,11 @@ import { PushRegistration } from "@/components/PushRegistration";
 
 export default function HomePage() {
   const { room, loading, error } = useMyRoom();
+  const [pushCardDismissed, setPushCardDismissed] = useState(false);
 
   useEffect(() => {
-    if (loading || error || !("serviceWorker" in navigator)) return;
-
-    void navigator.serviceWorker.register("/sw.js").catch(() => {
-      // Push registration is optional and must not block the home page.
-    });
-  }, [loading, error]);
+    setPushCardDismissed(window.localStorage.getItem("push-card-dismissed") === "1");
+  }, []);
 
   if (loading) {
     return (
@@ -92,7 +89,7 @@ export default function HomePage() {
           </DebtAlert>
         )}
 
-        <section className="overflow-hidden rounded-[20px] bg-white shadow-[0px_2px_8px_rgba(0,0,0,0.08)]">
+        {!pushCardDismissed && <section className="overflow-hidden rounded-[20px] bg-white shadow-[0px_2px_8px_rgba(0,0,0,0.08)]">
           <div className="flex items-center gap-3 px-4 py-3.5">
             <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[20px] bg-[#FBE3DD]">
               <BellRing className="h-5 w-5 text-[#A73414]" strokeWidth={1.5} />
@@ -105,11 +102,12 @@ export default function HomePage() {
                 Nhận thông báo push cho hóa đơn và giao dịch mới.
               </p>
             </div>
+            <button type="button" aria-label="Đóng thẻ thông báo" onClick={() => { window.localStorage.setItem("push-card-dismissed", "1"); setPushCardDismissed(true); }} className="shrink-0 text-xl leading-none text-[#7A6F6A]">×</button>
           </div>
           <div className="px-4 py-3">
             <PushRegistration />
           </div>
-        </section>
+        </section>}
 
         <UtilityInfo
           electricityUsage={electricityUsage}
