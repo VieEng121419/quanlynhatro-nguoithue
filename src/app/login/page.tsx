@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { QrCode } from "lucide-react";
 
@@ -14,15 +14,23 @@ export default function LoginPage() {
   const { login } = useAuth();
   const { login: qrLogin, loading, error } = useQrLogin();
   const [showScanner, setShowScanner] = useState(false);
+  const loginInProgressRef = useRef(false);
   const [manualCode, setManualCode] = useState("");
   const [showManual, setShowManual] = useState(false);
 
   const handleLogin = useCallback(
     async (qrCode: string) => {
-      const result = await qrLogin(qrCode);
-      if (result) {
-        login(result.accessToken, result.user);
-        router.push("/home");
+      if (loginInProgressRef.current) return;
+      loginInProgressRef.current = true;
+
+      try {
+        const result = await qrLogin(qrCode);
+        if (result) {
+          login(result.accessToken, result.user);
+          await router.push("/home");
+        }
+      } finally {
+        loginInProgressRef.current = false;
       }
     },
     [qrLogin, login, router],

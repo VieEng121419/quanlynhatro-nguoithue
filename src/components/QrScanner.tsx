@@ -13,6 +13,7 @@ export function QrScanner({ onScan, onClose }: QrScannerProps) {
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const onScanRef = useRef(onScan);
   const stoppingRef = useRef(false);
+  const scannedRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
 
@@ -50,9 +51,10 @@ export function QrScanner({ onScan, onClose }: QrScannerProps) {
       return scanner.start(
         config,
         { fps: 10, qrbox: { width: 250, height: 250 } },
-        (decodedText) => {
-          // Dừng scanner sau khi quét được để tránh quét lặp
-          stopScanner();
+        async (decodedText) => {
+          if (scannedRef.current) return;
+          scannedRef.current = true;
+          await stopScanner();
           onScanRef.current(decodedText);
         },
         () => {
