@@ -8,7 +8,6 @@ export const apiClient = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
-// Interceptor: tự động gắn token vào mọi request
 apiClient.interceptors.request.use((config) => {
   const token = localStorage.getItem("accessToken");
   if (token) {
@@ -16,3 +15,27 @@ apiClient.interceptors.request.use((config) => {
   }
   return config;
 });
+
+let redirectingToLogin = false;
+
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (
+      error.response?.status === 401 &&
+      typeof window !== "undefined" &&
+      !redirectingToLogin
+    ) {
+      redirectingToLogin = true;
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("user");
+      document.cookie = "accessToken=; path=/; max-age=0";
+
+      if (window.location.pathname !== "/login") {
+        window.location.replace("/login");
+      }
+    }
+
+    return Promise.reject(error);
+  },
+);

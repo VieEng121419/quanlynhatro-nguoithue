@@ -3,8 +3,20 @@ import type { NextRequest } from "next/server";
 
 const protectedRoutes = ["/home", "/invoices", "/services", "/profile"];
 
+function isTokenExpired(token: string) {
+  try {
+    const payload = JSON.parse(
+      atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")),
+    ) as { exp?: number };
+    return typeof payload.exp === "number" && payload.exp <= Math.floor(Date.now() / 1000);
+  } catch {
+    return true;
+  }
+}
+
 export function middleware(request: NextRequest) {
   const token = request.cookies.get("accessToken")?.value;
+  const hasValidToken = Boolean(token && !isTokenExpired(token));
   const pathname = request.nextUrl.pathname;
 
   const isProtected = protectedRoutes.some(
@@ -12,14 +24,15 @@ export function middleware(request: NextRequest) {
   );
 
   // Chưa đăng nhập mà vào trang bảo vệ → redirect về /login
-  if (isProtected && !token) {
+  if (isProtected && !hasValidToken) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
-    return NextResponse.redirect(url);
+    const response = NextResponse.redirect(url);
+    response.cookies.delete("accessToken");
+    return response;
   }
 
-  // Đã đăng nhập mà vào /login → redirect về /home
-  if (pathname === "/login" && token) {
+  if (pathname === "/login" && hasValidToken) {
     const url = request.nextUrl.clone();
     url.pathname = "/home";
     return NextResponse.redirect(url);
